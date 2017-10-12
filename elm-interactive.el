@@ -944,9 +944,16 @@ Import consists of the word \"import\", real package name, and optional
        :sentinel #'process-sentinel
        :connection-type 'pipe))))
 
-(defun elm-oracle--get-completions-sync (command)
+(defun elm-oracle--get-completions-sync (prefix &optional file cwd)
   "Get completions by running COMMAND synchronously."
-  (json-read-from-string (shell-command-to-string (s-join " " command))))
+  (let* (
+	 (default-directory (or cwd (elm--find-dependency-file-path)))
+         (file (or file (buffer-file-name) (elm--find-main-file)))
+	 (command (list elm-oracle-command
+			(shell-quote-argument file)
+			(shell-quote-argument prefix))))
+    (json-read-from-string (shell-command-to-string
+			    (s-join " " command)))))
 
 (defun elm-oracle--get-completions-cached-1 (prefix &optional callback)
   "Get completions for PREFIX.  Async if CALLBACK is provided."
